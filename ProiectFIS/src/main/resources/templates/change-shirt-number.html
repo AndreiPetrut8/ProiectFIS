@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" crossorigin="" />
+    <link th:href="@{/style.css}" rel="stylesheet" />
+    <title>Change Shirt Number</title>
+</head>
+<body style="background-color: #4b0082;">
+<div class="login">
+    <div class="login__form" style="max-width: 420px; margin: auto;">
+
+        <h1 class="login__title">Change Shirt Number</h1>
+
+        <form th:action="@{/change-shirt-number}" th:object="${user}" method="post">
+            <label for="shirtNumber" style="color: white; display: block; margin-bottom: 5px;">New Shirt Number:</label>
+            <div class="login__inputs" style="margin-bottom: 1rem;">
+                <input
+                        type="number"
+                        id="shirtNumber"
+                        name="shirtNumber"
+                        min="0"
+                        max="99"
+                        required
+                        class="login__input"
+                        placeholder="Enter new shirt number"
+                />
+            </div>
+            <button type="submit" class="login__button">Change Number</button>
+        </form>
+
+        <div class="login__register" style="margin-top: 15px; text-align: center;">
+            <a th:href="@{/jucator}">Back to Dashboard</a>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

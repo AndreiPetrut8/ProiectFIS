@@ -105,6 +105,11 @@ img {
     padding-block: 1rem;
 }
 
+.login__input[type="select"], .login__input {
+    color: black !important;
+}
+
+
 .login__input::placeholder {
     color: var(--white-color);
 }

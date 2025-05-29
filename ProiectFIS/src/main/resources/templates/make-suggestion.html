@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" crossorigin="" />
+    <link th:href="@{/style.css}" rel="stylesheet" />
+    <title>Make Suggestion</title>
+</head>
+<body style="background-color: #4b0082;">
+<div class="login">
+    <div class="login__form" style="max-width: 420px; margin: auto;">
+        <h1 class="login__title">Make Suggestion</h1>
+
+        <form th:action="@{/make-suggestion}" method="post">
+            <label for="message" style="color: var(--white-color); font-weight: 500; display: block; margin-bottom: 0.5rem;">
+                Your Message to the Coach:
+            </label>
+            <textarea
+                    id="message"
+                    name="message"
+                    class="login__input"
+                    placeholder="Write your suggestion here..."
+                    required
+                    rows="6"
+                    style="resize: vertical;"
+            ></textarea>
+
+            <button type="submit" class="login__button" style="margin-top: 1rem;">
+                Send Suggestion
+            </button>
+        </form>
+
+        <div class="login__register" style="margin-top: 1rem; text-align: center;">
+            <a th:href="@{/jucator}">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

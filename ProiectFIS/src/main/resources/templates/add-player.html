@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link th:href="@{/style.css}" rel="stylesheet" />
+    <title>Add Player</title>
+</head>
+<body style="background-color: #4b0082;">
+<div class="login">
+    <div class="login__form">
+        <h1 class="login__title">Add New Player</h1>
+        <form th:action="@{/add-player}" th:object="${player}" method="post" class="login__inputs">
+            <input type="text" th:field="*{firstName}" placeholder="First Name" class="login__input" required />
+            <input type="number" th:field="*{shirtNumber}" placeholder="Shirt Number" class="login__input" required min="0" />
+            <input type="text" th:field="*{position}" placeholder="Position" class="login__input" required />
+            <button type="submit" class="login__button">Add Player</button>
+        </form>
+        <div class="login__register">
+            <a th:href="@{/antrenor}">Back to Players List</a>
+        </div>
+        <div th:if="${error}" style="color: #ffcccb; margin-top: 1rem;">
+            <p th:text="${error}"></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
