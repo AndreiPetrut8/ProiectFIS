@@ -13,5 +13,22 @@ public class PlayerStatService {
     public void saveStat(PlayerStat playerStat) {
         playerStatRepository.save(playerStat);
     }
+
+    public void saveOrUpdateStat(PlayerStat playerStat) {
+        PlayerStat existing = playerStatRepository.findByUserIdAndPlayerId(playerStat.getUserId(), playerStat.getPlayerId());
+        if (existing != null) {
+            existing.setMinutesPlayed(playerStat.getMinutesPlayed());
+            existing.setGoals(playerStat.getGoals());
+            existing.setAssists(playerStat.getAssists());
+            existing.setYellowCards(playerStat.getYellowCards());
+            existing.setRedCards(playerStat.getRedCards());
+            existing.setPassesCompleted(playerStat.getPassesCompleted());
+            existing.setShotsOnTarget(playerStat.getShotsOnTarget());
+            playerStatRepository.save(existing);
+        } else {
+            playerStatRepository.save(playerStat);
+        }
+    }
+
 }
 

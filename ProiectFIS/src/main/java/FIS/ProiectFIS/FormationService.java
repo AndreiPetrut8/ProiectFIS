@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FormationService {
@@ -18,8 +19,18 @@ public class FormationService {
         formationRepository.save(formation);
     }
 
-    public List<Formation> getFormationsByUser(User user) {
-        return formationRepository.findByUser(user);
+    public void saveOrUpdateFormation(Formation formation) {
+        Formation existing = formationRepository.findByUserIdAndName(formation.getUserId(), formation.getName());
+
+        if (existing != null) {
+            existing.setDescription(formation.getDescription());
+
+            formationRepository.save(existing);
+        } else {
+            formationRepository.save(formation);
+        }
     }
+
+
 }
 

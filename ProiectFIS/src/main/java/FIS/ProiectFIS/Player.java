@@ -21,24 +21,44 @@ public class Player {
     @Column(nullable = false)
     private String position;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id") // cheia străină către tabela users
-    private User user;
+    @Column(name = "user_id", nullable = true)
+    private Integer userId;
 
-    // Constructor implicit
+    private Boolean startingTeam = false;
+
+    @Column(length = 1000)
+    private String suggestion;
+
+    @Column
+    private Integer coachUserId;
+
     public Player() {
     }
 
-    // Constructor cu parametri (opțional)
+
     public Player(String firstName, String lastName, Integer shirtNumber, String position,
-                  LocalDate dateOfBirth, String nationality, User user) {
+                  LocalDate dateOfBirth, String nationality, Integer userId) {
         this.firstName = firstName;
         this.shirtNumber = shirtNumber;
         this.position = position;
-        this.user = user;
+        this.userId = userId;
     }
 
-    // Getteri și setteri
+
+    public String getSuggestion() { return suggestion; }
+    public void setSuggestion(String suggestion) { this.suggestion = suggestion; }
+
+    public Integer getCoachUserId() { return coachUserId; }
+    public void setCoachUserId(Integer coachUserId) { this.coachUserId = coachUserId; }
+
+
+    public Boolean getStartingTeam() {
+        return startingTeam;
+    }
+
+    public void setStartingTeam(Boolean startingTeam) {
+        this.startingTeam = startingTeam;
+    }
 
     public Integer getId() {
         return id;
@@ -73,11 +93,11 @@ public class Player {
     }
 
 
-    public User getUser() {
-        return user;
+    public Integer getUserId() {
+        return userId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 }

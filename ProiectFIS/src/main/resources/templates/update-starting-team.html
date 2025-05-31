@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" crossorigin="" />
+    <link th:href="@{/style.css}" rel="stylesheet" />
+    <title>Select Starting Team</title>
+</head>
+<body style="background-color: #4b0082;">
+<div class="login">
+    <div class="login__form">
+        <h1 class="login__title">Select Starting Team</h1>
+        <form th:action="@{/update-starting-team}" method="post">
+            <div style="max-height: 300px; overflow-y: auto; margin-bottom: 1rem;">
+                <ul style="list-style: none; padding: 0;">
+                    <li th:each="player : ${players}" style="margin-bottom: 0.5rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" name="startingTeamIds" th:value="${player.id}"
+                                   th:checked="${player.startingTeam == 1}" />
+                            <span th:text="${player.firstName}">Player Name</span>
+                        </label>
+                    </li>
+                </ul>
+            </div>
+            <button type="submit" class="login__button">Save Starting Team</button>
+        </form>
+
+        <div class="login__register">
+            <a th:href="@{/antrenor}">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

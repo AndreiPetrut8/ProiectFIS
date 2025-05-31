@@ -18,14 +18,6 @@ public class PlayerService {
         playerRepository.save(player);
     }
 
-    public List<Player> getPlayersByUser(User user) {
-        return playerRepository.findByUser(user);
-    }
-
-    public boolean shirtNumberExists(int shirtNumber) {
-        return playerRepository.findByShirtNumber(shirtNumber).isPresent();
-    }
-
     public Player getPlayerById(Integer id) {
         return playerRepository.findById(id).orElse(null);
     }

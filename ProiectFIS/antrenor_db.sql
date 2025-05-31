@@ -16,6 +16,8 @@ CREATE TABLE players (
                          shirt_number INT UNIQUE,
                          position VARCHAR(30) NOT NULL,
                          user_id INT,
+                         suggestion VARCHAR(255),
+                         coach_user_id INT,
                          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

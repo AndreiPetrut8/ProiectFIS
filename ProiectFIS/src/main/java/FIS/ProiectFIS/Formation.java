@@ -10,17 +10,18 @@ public class Formation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name; // ex: "4-4-2", "4-3-3", etc.
+    private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;  // antrenorul care a ales formarea
+    private String description;
+
+    private Integer userId;
 
     public Formation() {}
 
-    public Formation(String name, User user) {
+    public Formation(String name, String description, Integer userId) {
         this.name = name;
-        this.user = user;
+        this.description = description;
+        this.userId = userId;
     }
 
     // getteri si setteri
@@ -36,16 +37,24 @@ public class Formation {
         return name;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
 
-    public User getUser() {
-        return user;
+    public Integer getUserId() {
+        return userId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 }
 

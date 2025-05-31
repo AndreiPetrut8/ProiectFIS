@@ -7,8 +7,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PlayerRepository extends JpaRepository<Player, Integer> {
-    List<Player> findByUser(User user);  // toți jucătorii adăugați de un user (antrenor)
-    Optional<Player> findByShirtNumber(int shirtNumber);  // pentru a verifica duplicat
+
+    Player findByUserId(Integer userId);
+    Player findByFirstName(String firstName);
+    Player findByShirtNumber(int shirtNumber);
     Player findByFirstNameAndShirtNumber(String first_name, int shirtNumber);
 
+    List<Player> findAllByCoachUserId(Integer id);
 }

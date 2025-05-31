@@ -12,19 +12,22 @@
     <div class="login__form" style="max-width: 420px; margin: auto;">
         <h1 class="login__title">Make Suggestion</h1>
 
-        <form th:action="@{/make-suggestion}" method="post">
-            <label for="message" style="color: var(--white-color); font-weight: 500; display: block; margin-bottom: 0.5rem;">
+        <form th:action="@{/make-suggestion}" th:object="${player}" method="post">
+            <label for="suggestion" style="color: var(--white-color); font-weight: 500; display: block; margin-bottom: 0.5rem;">
                 Your Message to the Coach:
             </label>
             <textarea
-                    id="message"
-                    name="message"
+                    id="suggestion"
+                    th:field="*{suggestion}"
                     class="login__input"
                     placeholder="Write your suggestion here..."
                     required
                     rows="6"
                     style="resize: vertical;"
             ></textarea>
+            <label for="coachUsername" style="color: var(--white-color);">Coach Username:</label>
+            <input type="text" id="coachUsername" name="coachUsername" class="login__input" required />
+
 
             <button type="submit" class="login__button" style="margin-top: 1rem;">
                 Send Suggestion

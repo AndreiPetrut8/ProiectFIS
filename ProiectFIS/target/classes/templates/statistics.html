@@ -1,43 +1,37 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="ro" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Player Statistics</title>
+    <title>Introdu Statistici Jucător</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/css/your-style.css" />
+    <link th:href="@{/style.css}" rel="stylesheet" />
 </head>
-<body>
-<section class="login">
-    <div class="login">
-        <form class="login__form" action="/statistics" method="post">
-            <h1 class="login__title">Introdu Statistici Jucător</h1>
+<body style="background-color: #4b0082;">
+<div class="login">
+    <form class="login__form" th:action="@{/statistics}" method="post" th:object="${playerStat}" style="max-width: 480px;">
+        <h1 class="login__title">Introdu Statistici Jucător</h1>
 
-            <div class="login__inputs">
+        <input class="login__input" type="text" name="username" placeholder="Username jucător" required>
 
-                <input class="login__input" type="number" name="minutesPlayed" placeholder="Minute jucate" required>
-                <input class="login__input" type="number" name="goals" placeholder="Goluri" required>
-                <input class="login__input" type="number" name="assists" placeholder="Assisturi" required>
-                <input class="login__input" type="number" name="yellowCards" placeholder="Cartonașe galbene" required>
-                <input class="login__input" type="number" name="redCards" placeholder="Cartonașe roșii" required>
-                <input class="login__input" type="number" name="passesCompleted" placeholder="Passe complete" required>
-                <input class="login__input" type="number" name="shotsOnTarget" placeholder="Șuturi pe poartă" required>
-            </div>
+        <input class="login__input" type="number" name="minutesPlayed" placeholder="Minute jucate" required>
+        <input class="login__input" type="number" name="goals" placeholder="Goluri" required>
+        <input class="login__input" type="number" name="assists" placeholder="Assisturi" required>
+        <input class="login__input" type="number" name="yellowCards" placeholder="Cartonașe galbene" required>
+        <input class="login__input" type="number" name="redCards" placeholder="Cartonașe roșii" required>
+        <input class="login__input" type="number" name="passesCompleted" placeholder="Passe complete" required>
+        <input class="login__input" type="number" name="shotsOnTarget" placeholder="Șuturi pe poartă" required>
 
-            <button class="login__button" type="submit">Salvează statistici</button>
+        <button class="login__button" type="submit">Salvează statistici</button>
 
-            <div style="text-align:center; margin-top: 1rem;">
-                <p style="color: green;" th:if="${successMessage}" th:text="${successMessage}"></p>
-                <p style="color: red;" th:if="${errorMessage}" th:text="${errorMessage}"></p>
-            </div>
-        </form>
-    </div>
-
-
-    <!-- Afișare mesaje -->
-    <div th:if="${successMessage}" style="color:green" th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}" style="color:red" th:text="${errorMessage}"></div>
-
-</section>
+        <div style="text-align:center; margin-top: 1rem;">
+            <p style="color: #a2f5a2;" th:if="${successMessage}" th:text="${successMessage}"></p>
+            <p style="color: #ff6b6b;" th:if="${errorMessage}" th:text="${errorMessage}"></p>
+        </div>
+        <div style="margin-top: 2rem; text-align: center;">
+            <a th:href="@{/antrenor}" class="login__button">Înapoi la Dashboard</a>
+        </div>
+    </form>
+</div>
 </body>
 </html>

@@ -5,7 +5,9 @@ import FIS.ProiectFIS.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FormationRepository extends JpaRepository<Formation, Long> {
-    List<Formation> findByUser(User user);
+    Formation findByUserIdAndName(Integer userId, String name);
+    List<Formation> findAll();
 }

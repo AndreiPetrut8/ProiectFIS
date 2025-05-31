@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ro" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vezi Statistici</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link th:href="@{/style.css}" rel="stylesheet" />
+</head>
+<body style="background-color: #4b0082;">
+<div class="login">
+    <div class="login__form" style="max-width: 480px;">
+        <h1 class="login__title">Statistici Jucător</h1>
+
+        <div th:if="${playerStat != null}" class="login__inputs" style="color: white; font-weight: 500;">
+            <p><strong>Minute jucate:</strong> <span th:text="${playerStat.minutesPlayed}">0</span></p>
+            <p><strong>Goluri:</strong> <span th:text="${playerStat.goals}">0</span></p>
+            <p><strong>Assisturi:</strong> <span th:text="${playerStat.assists}">0</span></p>
+            <p><strong>Cartonașe galbene:</strong> <span th:text="${playerStat.yellowCards}">0</span></p>
+            <p><strong>Cartonașe roșii:</strong> <span th:text="${playerStat.redCards}">0</span></p>
+            <p><strong>Passe complete:</strong> <span th:text="${playerStat.passesCompleted}">0</span></p>
+            <p><strong>Șuturi pe poartă:</strong> <span th:text="${playerStat.shotsOnTarget}">0</span></p>
+        </div>
+
+        <div th:if="${playerStat == null}" style="color: #ff6b6b; font-weight: 600; text-align: center;">
+            <p>Nu există statistici pentru acest jucător.</p>
+        </div>
+
+        <div style="margin-top: 2rem; text-align: center;">
+            <a th:href="@{/jucator}" class="login__button">Înapoi la Dashboard</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
