@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -307,6 +308,8 @@ public class HomeController {
     @Autowired
     private PlayerStatRepository playerStatRepository;
 
+
+    
     @GetMapping("/see-statistics")
     public String seeStatistics(HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");
@@ -373,6 +376,7 @@ public class HomeController {
         return "change-shirt-number";
     }
 
+  
 
     @PostMapping("/change-shirt-number")
     public String changeShirtNumber(@RequestParam int shirtNumber, HttpSession session, Model model) {
@@ -438,31 +442,34 @@ public class HomeController {
         return "choose-action"; // numele fișierului HTML fără .html
     }
 
-    @GetMapping("/view-formations-coach")
-    public String viewFormationsCoach(Model model) {
-        List<Formation> formations = formationRepository.findAll();
+   @GetMapping("/view-formations-coach")
+public String viewFormationsCoach(Model model) {
+    List<Formation> formations = formationRepository.findAll();
+    List<Map<String, String>> formationDetails = new ArrayList<>();
 
-        List<Map<String, String>> formationDetails = new ArrayList<>();
+    for (Formation formation : formations) {
+        User user = userRepository.findByIdNoOptional(formation.getUserId());
+        String coachName = (user != null) ? user.getUsername() : "Necunoscut";
 
-        for (Formation formation : formations) {
-            User user = userRepository.findByIdNoOptional(formation.getUserId());
+        Map<String, String> details = new HashMap<>();
+        // ADAUGĂ ID-UL AICI (convertit în String pentru că harta e <String, String>)
+        details.put("id", String.valueOf(formation.getId())); 
+        details.put("name", formation.getName());
+        details.put("description", formation.getDescription());
+        details.put("coach", coachName);
 
-            String coachName = "Necunoscut";
-            if (user != null) {
-                coachName = user.getUsername();
-            }
-
-            Map<String, String> details = new HashMap<>();
-            details.put("name", formation.getName());
-            details.put("description", formation.getDescription());
-            details.put("coach", coachName);
-
-            formationDetails.add(details);
-        }
-
-        model.addAttribute("formationDetails", formationDetails);
-        return "view-formations-coach";
+        formationDetails.add(details);
     }
+
+    model.addAttribute("formationDetails", formationDetails);
+    return "view-formations-coach";
+}
+
+     @PostMapping("/formation/delete")
+public String deleteFormation(@RequestParam Long id){
+    formationRepository.deleteById(id);
+    return "redirect:/view-formations-coach";
+}
 
     @GetMapping("/see-suggestions")
     public String seeSuggestions(HttpSession session, Model model) {

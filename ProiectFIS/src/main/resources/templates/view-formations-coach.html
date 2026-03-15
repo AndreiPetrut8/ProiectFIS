@@ -3,30 +3,50 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" crossorigin="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" />
     <link th:href="@{/style.css}" rel="stylesheet" />
-    <title>Formations</title>
+    <title>Formations List</title>
 </head>
-<body style="background-color: #4b0082;">
-<div class="login">
-    <div class="login__form" style="max-width: 720px; margin: auto;">
-        <h1 class="login__title">Available Formations</h1>
+<body style="background-color: #4b0082; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px;">
 
-        <div th:if="${formationDetails.size() == 0}" style="color: white; text-align: center; margin-bottom: 1rem;">
-            No formations found.
-        </div>
+    <div class="login">
+        <div class="login__form" style="max-width: 600px; width: 100%; background-color: hsla(0, 0%, 100%, 0.1); border: 2px solid hsla(0, 0%, 100%, .7); padding: 2.5rem 1.5rem; border-radius: 1.5rem; backdrop-filter: blur(16px); color: white;">
+            
+            <h1 class="login__title" style="text-align: center; font-size: 2rem; margin-bottom: 2rem;">Available Formations</h1>
 
-        <div th:each="formation : ${formationDetails}" class="login__card" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 1rem; margin-bottom: 1rem; color: white; backdrop-filter: blur(10px);">
-            <h2 th:text="${formation.name}" style="margin-bottom: 0.5rem;"></h2>
-            <p><strong>Description:</strong> <span th:text="${formation.description}"></span></p>
-            <p><strong>Coach:</strong> <span th:text="${formation.coach}"></span></p>
-        </div>
+            <div th:if="${formationDetails == null || formationDetails.isEmpty()}" style="text-align: center; margin-bottom: 1rem; opacity: 0.8;">
+                No formations found.
+            </div>
 
-        <div class="login__register" style="margin-top: 15px; text-align: center;">
+            <div th:each="formation : ${formationDetails}" 
+                 style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 1rem; padding: 1.25rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                
+                <div style="flex: 1;">
+                    <h2 th:text="${formation['name']}" style="font-size: 1.25rem; margin-bottom: 0.25rem; color: #fff;"></h2>
+                    <p style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.25rem;">
+                        <strong>Tactic:</strong> <span th:text="${formation['description']}"></span>
+                    </p>
+                    <p style="font-size: 0.8rem; opacity: 0.7;">
+                        <strong>Coach:</strong> <span th:text="${formation['coach']}"></span>
+                    </p>
+                </div>
 
-            <a th:href="@{/antrenor}">Back to Dashboard</a>
+                <form th:action="@{/formation/delete}" method="post" onsubmit="return confirm('Ești sigur că vrei să ștergi această formație?');">
+                    <input type="hidden" name="id" th:value="${formation['id']}" />
+                    
+                    <button type="submit" style="background-color: #ff4b2b; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(255, 75, 43, 0.3);">
+                        <i class="ri-delete-bin-7-line" style="font-size: 1.25rem;"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <a th:href="@{/antrenor}" style="color: white; text-decoration: none; font-size: 0.9rem; opacity: 0.8;">
+                    <i class="ri-arrow-left-line"></i> Back to Dashboard
+                </a>
+            </div>
         </div>
     </div>
-</div>
+
 </body>
 </html>

@@ -3,13 +3,8 @@
 
 /*=============== VARIABLES CSS ===============*/
 :root {
-    /*========== Colors ==========*/
-    /*Color mode HSL(hue, saturation, lightness)*/
     --white-color: hsl(0, 0%, 100%);
     --black-color: hsl(0, 0%, 0%);
-
-    /*========== Font and typography ==========*/
-    /*.5rem = 8px | 1rem = 16px ...*/
     --body-font: "Poppins", sans-serif;
     --h1-font-size: 2rem;
     --normal-font-size: 1rem;
@@ -23,11 +18,11 @@
     margin: 0;
 }
 
-body,
-input,
-button {
+body {
     font-family: var(--body-font);
     font-size: var(--normal-font-size);
+    color: var(--white-color);
+    background-color: #0b0b0b; /* Fundal închis ca să vedem albul */
 }
 
 a {
@@ -46,91 +41,92 @@ img {
     height: 100vh;
     display: grid;
     align-items: center;
-}
-
-.login__bg {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
+    justify-content: center;
 }
 
 .login__form {
     position: relative;
     margin-inline: 1.5rem;
-    background-color: hsla(0, 0%, 100%, .01);
+    background-color: hsla(0, 0%, 100%, 0.05); /* Sticlă subțire */
     border: 2px solid hsla(0, 0%, 100%, .7);
-    padding: 2.5rem 1rem;
+    padding: 2.5rem 1.5rem;
     color: var(--white-color);
-    border-radius: 1rem;
-    backdrop-filter: blur(16px);
+    border-radius: 1.5rem;
+    backdrop-filter: blur(20px);
+    width: 100%;
+    max-width: 400px;
 }
 
 .login__title {
     text-align: center;
     font-size: var(--h1-font-size);
-    margin-bottom: 1.25rem;
-}
-
-.login__inputs,
-.login__box {
-    display: grid;
+    margin-bottom: 2rem;
 }
 
 .login__inputs {
+    display: grid;
     row-gap: 1.25rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .login__box {
+    display: grid;
     grid-template-columns: 1fr max-content;
     column-gap: .75rem;
     align-items: center;
     border: 2px solid hsla(0, 0%, 100%, .7);
     padding-inline: 1.25rem;
     border-radius: 4rem;
+    background: transparent;
 }
 
+/*================== INPUT & SELECT (TEXT ALB) ==================*/
 .login__input,
-.login__button {
-    border: none;
-    outline: none;
-}
-
-.login__input {
+.login__select {
     width: 100%;
-    background: none;
-    color: var(--white-color);
     padding-block: 1rem;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    
+    /* SOLUȚIA PENTRU TEXTUL NEGRU */
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    color-scheme: dark; /* Spune browserului că fundalul e închis */
+    
+    font-family: var(--body-font);
+    font-size: var(--normal-font-size);
 }
-
-.login__input[type="select"], .login__input {
-    color: black !important;
-}
-
 
 .login__input::placeholder {
+    color: hsla(0, 0%, 100%, 0.8);
+}
+
+/* Fix pentru Autofill (fără fundal galben/alb) */
+input:-webkit-autofill {
+    -webkit-text-fill-color: #ffffff !important;
+    transition: background-color 5000s ease-in-out 0s;
+    box-shadow: inset 0 0 0px 1000px transparent !important;
+}
+
+/*================== ICON ==================*/
+.login__box i {
+    font-size: 1.25rem;
     color: var(--white-color);
 }
 
-.login__box i {
-    font-size: 1.25rem;
-}
-
-.login__check,
-.login__check-box {
+/*================== CHECKBOX ==================*/
+.login__check {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.login__check {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     font-size: var(--small-font-size);
 }
 
 .login__check-box {
+    display: flex;
+    align-items: center;
     column-gap: .5rem;
 }
 
@@ -138,6 +134,7 @@ img {
     width: 1rem;
     height: 1rem;
     accent-color: var(--white-color);
+    cursor: pointer;
 }
 
 .login__forgot {
@@ -148,17 +145,29 @@ img {
     text-decoration: underline;
 }
 
+/*================== BUTTON ==================*/
 .login__button {
     width: 100%;
     padding: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     background-color: var(--white-color);
     border-radius: 4rem;
     color: var(--black-color);
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
+    border: none;
+    transition: transform .3s, background-color .3s;
 }
 
+.login__button:hover {
+    background-color: hsla(0, 0%, 100%, 0.9);
+}
+
+.login__button:active {
+    transform: scale(.97);
+}
+
+/*================== REGISTER ==================*/
 .login__register {
     font-size: var(--small-font-size);
     text-align: center;
@@ -166,24 +175,88 @@ img {
 
 .login__register a {
     color: var(--white-color);
-    font-weight: 500;
+    font-weight: 600;
 }
 
-.login__register a:hover {
-    text-decoration: underline;
+/*================== SELECT DROPDOWN ==================*/
+.login__select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.login__select option {
+    background-color: #1a1a1a; /* Fundalul listei de opțiuni */
+    color: #fff;
 }
 
 /*=============== BREAKPOINTS ===============*/
-/* For medium devices */
 @media screen and (min-width: 576px) {
-    .login {
-        justify-content: center;
-    }
     .login__form {
-        width: 420px;
-        padding-inline: 2.5rem;
+        padding: 3rem 2.5rem;
     }
-    .login__title {
-        margin-bottom: 2rem;
-    }
+}
+
+
+
+.formations{
+    display:flex;
+    flex-wrap:wrap;
+    gap:15px;
+    justify-content:center;
+    margin-bottom:20px;
+}
+
+/* ascunde radio button */
+.formations input{
+    display:none;
+}
+
+.formation-img{
+    width:150px;
+    height:150px;
+    object-fit:fill;
+    border:2px solid white;
+    border-radius:10px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+/* hover */
+.formation-img:hover{
+    transform:scale(1.05);
+}
+
+/* imagine selectată */
+.formations input:checked + .formation-img{
+    border:3px solid cyan;
+    transform:scale(1.1);
+}
+
+.delete-card{
+    background: rgba(255,255,255,0.1);
+    border-radius:15px;
+    padding:1rem;
+    margin-bottom:1rem;
+    color:white;
+    backdrop-filter:blur(10px);
+    cursor:pointer;
+    position:relative;
+    transition:0.3s;
+}
+
+.delete-card:hover{
+    transform:scale(1.03);
+    border:2px solid red;
+}
+
+/* ascunde butonul */
+.hidden-button{
+    position:absolute;
+    width:100%;
+    height:100%;
+    top:0;
+    left:0;
+    opacity:0;
+    cursor:pointer;
 }
