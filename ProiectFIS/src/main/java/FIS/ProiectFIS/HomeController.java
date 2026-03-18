@@ -366,47 +366,61 @@ public class HomeController {
     }
 
     @GetMapping("/change-shirt-number")
-    public String showChangeShirtNumberPage(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("user");
+public String showShirtNumberForm(HttpSession session, Model model) {
+    User user = (User) session.getAttribute("user");
 
-        if (user == null) {
-            return "redirect:/login";
-        }
+    if (user == null) {
+        return "redirect:/login";
+    }
 
+    Player player = playerRepository.findByUserId(user.getId());
+
+    if (player == null) {
+        model.addAttribute("errorMessage", "Antrenorul nu v-a înregistrat încă.");
         return "change-shirt-number";
     }
 
+    // Trimite numărul curent în model pentru preview
+    model.addAttribute("shirtNumber", player.getShirtNumber());
+
+    return "change-shirt-number";
+}
+
+
   
 
-    @PostMapping("/change-shirt-number")
-    public String changeShirtNumber(@RequestParam int shirtNumber, HttpSession session, Model model) {
-        User user = (User) session.getAttribute("user");
+  @PostMapping("/change-shirt-number")
+public String changeShirtNumber(@RequestParam int shirtNumber, HttpSession session, Model model) {
 
-        if (user == null) {
-            return "redirect:/login";
-        }
+    User user = (User) session.getAttribute("user");
 
-        Player player = playerRepository.findByUserId(user.getId());
-
-        if (player == null) {
-            model.addAttribute("errorMessage", "Antrenorul nu v-a înregistrat încă.");
-            return "change-shirt-number";
-        }
-
-
-        Player existingPlayer = playerRepository.findByShirtNumber(shirtNumber);
-        if (existingPlayer != null && !existingPlayer.getId().equals(player.getId())) {
-            model.addAttribute("errorMessage", "Numărul de tricou este deja folosit de un alt jucător.");
-            return "change-shirt-number";
-        }
-
-
-        player.setShirtNumber(shirtNumber);
-        playerRepository.save(player);
-
-        model.addAttribute("successMessage", "Numărul de tricou a fost schimbat cu succes.");
-        return "jucator";
+    if (user == null) {
+        return "redirect:/login";
     }
+
+    Player player = playerRepository.findByUserId(user.getId());
+
+    if (player == null) {
+        model.addAttribute("errorMessage", "Antrenorul nu v-a înregistrat încă.");
+        return "change-shirt-number";
+    }
+
+    Player existingPlayer = playerRepository.findByShirtNumber(shirtNumber);
+
+    if (existingPlayer != null && !existingPlayer.getId().equals(player.getId())) {
+        model.addAttribute("errorMessage", "Numărul de tricou este deja folosit de un alt jucător.");
+        model.addAttribute("shirtNumber", player.getShirtNumber());
+        return "change-shirt-number";
+    }
+
+    player.setShirtNumber(shirtNumber);
+    playerRepository.save(player);
+
+    model.addAttribute("successMessage", "Numărul de tricou a fost schimbat cu succes.");
+    model.addAttribute("shirtNumber", shirtNumber);
+
+    return "change-shirt-number";
+}
 
     @Autowired
     private FormationRepository formationRepository;
@@ -449,11 +463,16 @@ public String viewFormationsCoach(Model model) {
 
     for (Formation formation : formations) {
         User user = userRepository.findByIdNoOptional(formation.getUserId());
-        String coachName = (user != null) ? user.getUsername() : "Necunoscut";
+
+        String coachName = "Necunoscut";
+        if (user != null) {
+            coachName = user.getUsername();
+        }
 
         Map<String, String> details = new HashMap<>();
-        // ADAUGĂ ID-UL AICI (convertit în String pentru că harta e <String, String>)
+        // ADAUGĂ ACEASTĂ LINIE:
         details.put("id", String.valueOf(formation.getId())); 
+        
         details.put("name", formation.getName());
         details.put("description", formation.getDescription());
         details.put("coach", coachName);
@@ -465,9 +484,23 @@ public String viewFormationsCoach(Model model) {
     return "view-formations-coach";
 }
 
-     @PostMapping("/formation/delete")
-public String deleteFormation(@RequestParam Long id){
-    formationRepository.deleteById(id);
+    @PostMapping("/formation/delete")
+public String deleteFormation(@RequestParam(value = "id", required = false) String idRaw) {
+    System.out.println("ID primit brut: '" + idRaw + "'"); // Vezi ce scrie între ghilimele în consolă
+    
+    if (idRaw == null || idRaw.trim().isEmpty() || idRaw.equals("null")) {
+        System.err.println("Eroare: ID-ul este gol sau nevalid!");
+        return "redirect:/view-formations-coach";
+    }
+
+    try {
+        Long id = Long.parseLong(idRaw);
+        formationRepository.deleteById(id);
+        System.out.println("Ștergere reușită pentru ID: " + id);
+    } catch (NumberFormatException e) {
+        System.err.println("Nu s-a putut converti ID-ul: " + idRaw);
+    }
+
     return "redirect:/view-formations-coach";
 }
 

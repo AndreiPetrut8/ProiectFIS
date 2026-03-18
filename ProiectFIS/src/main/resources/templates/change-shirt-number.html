@@ -1,44 +1,71 @@
+```html
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" crossorigin="" />
-    <link th:href="@{/style.css}" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css">
+    <link th:href="@{/style.css}" rel="stylesheet">
+
     <title>Change Shirt Number</title>
 </head>
-<body style="background-color: #4b0082;">
+
+<body class="shirt-page" style="background-color: #01522f;"  >
+
 <div class="login">
-    <div class="login__form" style="max-width: 420px; margin: auto;">
 
-        <h1 class="login__title">Change Shirt Number</h1>
+<div class="login__form">
 
-        <!-- Mesaje feedback -->
-        <div th:if="${errorMessage}" class="login__error" style="color: #ff6b6b; text-align: center; margin-bottom: 10px;" th:text="${errorMessage}"></div>
-        <div th:if="${successMessage}" class="login__success" style="color: #4caf50; text-align: center; margin-bottom: 10px;" th:text="${successMessage}"></div>
+<h1 class="login__title">Change Shirt Number</h1>
 
-        <form th:action="@{/change-shirt-number}" method="post">
-            <label for="shirtNumber" style="color: white; display: block; margin-bottom: 5px;">New Shirt Number:</label>
-            <div class="login__inputs" style="margin-bottom: 1rem;">
-                <input
-                        type="number"
-                        id="shirtNumber"
-                        name="shirtNumber"
-                        min="1"
-                        max="99"
-                        required
-                        class="login__input"
-                        placeholder="Enter new shirt number"
-                />
-            </div>
-            <button type="submit" class="login__button">Change Number</button>
-        </form>
+<!-- Mesaje -->
+<div th:if="${errorMessage}" class="login__error" th:text="${errorMessage}"></div>
+<div th:if="${successMessage}" class="login__success" th:text="${successMessage}"></div>
 
-        <div class="login__register" style="margin-top: 15px; text-align: center;">
-            <a th:href="@{/jucator}">Back to Dashboard</a>
-        </div>
+<!-- PREVIEW TRICOU -->
+<div class="shirt-preview">
 
-    </div>
+<img th:src="@{/images/jersey.png}" class="shirt-image">
+
+<div class="shirt-number" th:text="${shirtNumber}"></div>
+
 </div>
+
+<form th:action="@{/change-shirt-number}" method="post">
+
+<label for="shirtNumber" class="shirt-label">
+New Shirt Number
+</label>
+
+<input
+        type="number"
+        id="shirtNumber"
+        name="shirtNumber"
+        min="1"
+        max="99"
+        required
+        class="login__input"
+        placeholder="Enter new shirt number"
+/>
+
+<button type="submit" class="login__button">
+Change Number
+</button>
+
+</form>
+
+<div class="login__register">
+<a th:href="@{/jucator}">
+Back to Dashboard
+</a>
+</div>
+
+</div>
+
+</div>
+
 </body>
 </html>
+```

@@ -152,6 +152,9 @@ input:-webkit-autofill {
     margin-bottom: 1.5rem;
     background-color: var(--white-color);
     border-radius: 4rem;
+     display: flex;              
+    justify-content: center;    
+    align-items: center;        
     color: var(--black-color);
     font-weight: 600;
     cursor: pointer;
@@ -258,5 +261,71 @@ input:-webkit-autofill {
     top:0;
     left:0;
     opacity:0;
+    justify-content: center;
     cursor:pointer;
 }
+
+.shirt-page{
+    background-color:#4b0082;
+}
+
+.shirt-preview{
+    position:relative;
+    width:250px;
+    margin:auto;
+    margin-bottom:25px;
+}
+
+.shirt-image{
+    width:100%;
+}
+
+.shirt-number{
+    position:absolute;
+    top:45%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-size:70px;
+    font-weight:bold;
+    color:white;
+    text-shadow:3px 3px 8px black;
+}
+
+.shirt-label {
+    display: block; 
+    text-align: center;
+    margin-bottom: 0.5rem; 
+}
+
+.login__error{
+    color:#ff6b6b;
+    text-align:center;
+    margin-bottom:10px;
+}
+
+.login__success{
+    color:#4caf50;
+    text-align:center;
+    margin-bottom:10px;
+}
+
+#background-video {
+    position: fixed; /* să fie în fundal */
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -1; /* să fie în spate */
+    object-fit: cover; /* să acopere tot ecranul */
+}
+
+.content {
+    position: relative;
+    z-index: 1; /* să fie peste video */
+    text-align: center;
+    color: white; /* să se vadă pe video */
+}
+
+

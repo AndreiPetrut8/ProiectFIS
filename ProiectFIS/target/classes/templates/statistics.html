@@ -4,32 +4,65 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Introdu Statistici Jucător</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" />
     <link th:href="@{/style.css}" rel="stylesheet" />
 </head>
-<body style="background-color: #4b0082;">
+<body style="background-color: #01522f;">
 <div class="login">
     <form class="login__form" th:action="@{/statistics}" method="post" th:object="${playerStat}" style="max-width: 480px;">
-        <h1 class="login__title">Introdu Statistici Jucător</h1>
+        <h1 class="login__title">Statistici Jucător</h1>
 
-        <input class="login__input" type="text" name="username" placeholder="Username jucător" required>
+        <div class="login__inputs">
+            <div class="login__box">
+                <input class="login__input" type="text" name="username" placeholder="Username jucător" required>
+                <i class="ri-user-3-line"></i>
+            </div>
 
-        <input class="login__input" type="number" name="minutesPlayed" placeholder="Minute jucate" required>
-        <input class="login__input" type="number" name="goals" placeholder="Goluri" required>
-        <input class="login__input" type="number" name="assists" placeholder="Assisturi" required>
-        <input class="login__input" type="number" name="yellowCards" placeholder="Cartonașe galbene" required>
-        <input class="login__input" type="number" name="redCards" placeholder="Cartonașe roșii" required>
-        <input class="login__input" type="number" name="passesCompleted" placeholder="Pase complete" required>
-        <input class="login__input" type="number" name="shotsOnTarget" placeholder="Șuturi pe poartă" required>
+            <div class="login__box">
+                <input class="login__input" type="number" name="minutesPlayed" placeholder="Minute jucate" required>
+                <i class="ri-time-line"></i>
+            </div>
+
+            <div class="login__box">
+                <input class="login__input" type="number" name="goals" placeholder="Goluri" required>
+                <i class="ri-football-line"></i>
+            </div>
+
+            <div class="login__box">
+                <input class="login__input" type="number" name="assists" placeholder="Assisturi" required>
+                <i class="ri-hand-coin-line"></i>
+            </div>
+
+            <div class="login__box">
+                <input class="login__input" type="number" name="yellowCards" placeholder="Galbene" required>
+                <i class="ri-sticky-note-fill" style="color: #ffd700;"></i>
+            </div>
+
+            <div class="login__box">
+                <input class="login__input" type="number" name="redCards" placeholder="Roșii" required>
+                <i class="ri-sticky-note-fill" style="color: #ff4b2b;"></i>
+            </div>
+
+            <div class="login__box">
+                <input class="login__input" type="number" name="passesCompleted" placeholder="Pase complete" required>
+                <i class="ri-exchange-line"></i>
+            </div>
+
+            <div class="login__box">
+                <input class="login__input" type="number" name="shotsOnTarget" placeholder="Șuturi pe poartă" required>
+                <i class="ri-aiming-line"></i>
+            </div>
+        </div>
 
         <button class="login__button" type="submit">Salvează statistici</button>
 
         <div style="text-align:center; margin-top: 1rem;">
-            <p style="color: #a2f5a2;" th:if="${successMessage}" th:text="${successMessage}"></p>
-            <p style="color: #ff6b6b;" th:if="${errorMessage}" th:text="${errorMessage}"></p>
+            <p class="login__success" th:if="${successMessage}" th:text="${successMessage}"></p>
+            <p class="login__error" th:if="${errorMessage}" th:text="${errorMessage}"></p>
         </div>
-        <div style="margin-top: 2rem; text-align: center;">
-            <a th:href="@{/antrenor}" class="login__button">Înapoi la Dashboard</a>
+        
+        <div class="login__register">
+            <a th:href="@{/antrenor}"><i class="ri-arrow-left-line"></i> Back to Dashboard</a>
         </div>
     </form>
 </div>

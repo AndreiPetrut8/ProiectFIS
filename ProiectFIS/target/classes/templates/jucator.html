@@ -7,7 +7,12 @@
     <link th:href="@{/style.css}" rel="stylesheet" />
     <title>Player Dashboard</title>
 </head>
-<body style="background-color: #4b0082;">
+<body style="background-color: #01522f;">
+    <video autoplay muted loop id="background-video">
+        <source th:src="@{/videos/background.mp4}" type="video/mp4" />
+        Your browser does not support the video tag.
+    </video>
+   
 <div class="login">
     <div class="login__form">
         <h1 class="login__title">Welcome, Player!</h1>

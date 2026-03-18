@@ -7,7 +7,7 @@
     <link th:href="@{/style.css}" rel="stylesheet" />
     <title>Formations List</title>
 </head>
-<body style="background-color: #4b0082; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px;">
+<body style="background-color: #01522f; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px;">
 
     <div class="login">
         <div class="login__form" style="max-width: 600px; width: 100%; background-color: hsla(0, 0%, 100%, 0.1); border: 2px solid hsla(0, 0%, 100%, .7); padding: 2.5rem 1.5rem; border-radius: 1.5rem; backdrop-filter: blur(16px); color: white;">
@@ -31,13 +31,13 @@
                     </p>
                 </div>
 
-                <form th:action="@{/formation/delete}" method="post" onsubmit="return confirm('Ești sigur că vrei să ștergi această formație?');">
-                    <input type="hidden" name="id" th:value="${formation['id']}" />
-                    
-                    <button type="submit" style="background-color: #ff4b2b; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(255, 75, 43, 0.3);">
-                        <i class="ri-delete-bin-7-line" style="font-size: 1.25rem;"></i>
-                    </button>
-                </form>
+                <form th:action="@{/formation/delete}" method="post" onsubmit="return confirm('Ești sigur?');">
+    <input type="hidden" name="id" th:value="${formation['id']}" />
+    
+    <button type="submit" style="background-color: #ff4b2b; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center;">
+        <i class="ri-delete-bin-7-line" style="font-size: 1.25rem;"></i>
+    </button>
+</form>
             </div>
 
             <div style="text-align: center; margin-top: 1.5rem;">
