@@ -25,28 +25,27 @@ public class HomeController {
     private UserService userService;
 
     @PostMapping("/login")
-    public String login(@RequestParam String username,
-                        @RequestParam String password,
-                        HttpSession session,
-                        Model model) {
-        if (userService.authenticate(username, password)) {
-            session.setAttribute("user", userService.getUser(username));
-            User user = userService.getUser(username);
+public String login(String username, String password, HttpSession session, Model model) {
 
-            String role = user.getRole();
-            return switch (role.toLowerCase()) {
-                case "antrenor" -> "redirect:/antrenor";
-                case "jucator" -> "redirect:/jucator";
-                default -> {
-                    model.addAttribute("error", "Rol necunoscut.");
-                    yield "login";
-                }
-            };
-        } else {
-            model.addAttribute("error", "Invalid credentials");
-            return "login";
-        }
+      
+     if (userService.authenticate(username, password)) {
+
+        String otp = String.valueOf(new Random().nextInt(900000) + 100000);
+
+        otpStorage.put(username, otp);
+
+        System.out.println("OTP for " + username + ": " + otp);
+
+        session.setAttribute("pendingUser", username);
+
+        return "verify-otp";
     }
+
+    model.addAttribute("error", "Invalid credentials");
+    return "login";
+}
+
+
 
 
     @GetMapping("/register")
@@ -55,17 +54,17 @@ public class HomeController {
         return "register";
     }
 
+    
     @PostMapping("/register")
-    public String registerUser(@ModelAttribute("user") User user, Model model) {
-        if (userService.userExists(user.getUsername())) {
-            model.addAttribute("error", "Username already exists");
-            return "register";
-        }
+public String registerUser(@ModelAttribute User user) {
 
-        // TODO: hash password înainte de salvare!
-        userService.save(user);
-        return "redirect:/login";
-    }
+    userService.save(user); // aici se face BCrypt
+
+    return "redirect:/login";
+}
+
+
+
 
     @GetMapping("/jucator")
     public String jucator(HttpSession session) {
@@ -91,6 +90,40 @@ public class HomeController {
     public String logout() {
         return "login";
     }
+    private Map<String, String> otpStorage = new HashMap<>();
+    @GetMapping("/verify-otp")
+public String showOtpPage() {
+    return "verify-otp";
+}
+
+    @PostMapping("/verify-otp")
+public String verifyOtp(@RequestParam String otp, HttpSession session, Model model) {
+
+    String username = (String) session.getAttribute("pendingUser");
+
+    if (username == null) return "redirect:/login";
+
+    String storedOtp = otpStorage.get(username);
+
+    if (storedOtp != null && storedOtp.equals(otp)) {
+
+        User user = userService.getUser(username);
+        session.setAttribute("user", user);
+
+        otpStorage.remove(username);
+
+        String role = user.getRole().toLowerCase();
+
+        return switch (role) {
+            case "antrenor" -> "redirect:/antrenor";
+            case "jucator" -> "redirect:/jucator";
+            default -> "redirect:/login";
+        };
+    }
+
+    model.addAttribute("error", "Cod OTP invalid");
+    return "verify-otp";
+}
 
     @Autowired
     private UserRepository userRepository;

@@ -1,5 +1,6 @@
 FIS\ProiectFIS\FormationService.class
 FIS\ProiectFIS\HomeController.class
+FIS\ProiectFIS\SecurityConfig.class
 FIS\ProiectFIS\FormationRepository.class
 FIS\ProiectFIS\PlayerStat.class
 FIS\ProiectFIS\UserService.class
