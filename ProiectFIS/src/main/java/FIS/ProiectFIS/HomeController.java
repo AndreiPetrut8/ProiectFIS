@@ -1,13 +1,11 @@
 package FIS.ProiectFIS;
 
 import jakarta.servlet.http.HttpSession;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -16,37 +14,88 @@ import java.util.*;
 @Controller
 public class HomeController {
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private SmsService smsService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PlayerService playerService;
+
+    @Autowired
+    private FormationService formationService;
+
+    @Autowired
+    private PlayerRepository playerRepository;
+
+    @Autowired
+    private PlayerStatService playerStatService;
+
+    @Autowired
+    private PlayerStatRepository playerStatRepository;
+
+    @Autowired
+    private FormationRepository formationRepository;
+
     @GetMapping("/login")
     public String showLogin() {
         return "login";
     }
 
-    @Autowired
-    private UserService userService;
-
-    @PostMapping("/login")
-public String login(String username, String password, HttpSession session, Model model) {
-
-      
-     if (userService.authenticate(username, password)) {
-
-        String otp = String.valueOf(new Random().nextInt(900000) + 100000);
-
-        otpStorage.put(username, otp);
-
-        System.out.println("OTP for " + username + ": " + otp);
-
-        session.setAttribute("pendingUser", username);
-
-        return "verify-otp";
+    @GetMapping("/")
+    public String root(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user != null) {
+            String role = user.getRole() == null ? "" : user.getRole().toLowerCase();
+            return switch (role) {
+                case "antrenor" -> "redirect:/antrenor";
+                case "jucator" -> "redirect:/jucator";
+                default -> "redirect:/login";
+            };
+        }
+        return "redirect:/login";
     }
 
-    model.addAttribute("error", "Invalid credentials");
-    return "login";
-}
+    @PostMapping("/login")
+    public String login(String username, String password, HttpSession session, Model model) {
+        if (userService.authenticate(username, password)) {
+            String otp = String.valueOf(new Random().nextInt(900000) + 100000);
+            long expiry = System.currentTimeMillis() + 5 * 60 * 1000; // 5 minutes
 
+            User user = userService.getUser(username);
+            OtpData otpData = new OtpData(otp, expiry, 
+                user != null ? user.getEmail() : null, 
+                user != null ? user.getPhone() : null);
 
+            otpStorage.put(username, otpData);
+            session.setAttribute("pendingUser", username);
+            session.setAttribute("otpExpiry", expiry);
 
+            // Send OTP via email if available
+            if (user != null && user.getEmail() != null && !user.getEmail().isBlank()) {
+                emailService.sendOtp(user.getEmail(), otp);
+            }
+
+            // Send OTP via SMS if available
+            if (user != null && user.getPhone() != null && !user.getPhone().isBlank()) {
+                smsService.sendOtp(user.getPhone(), otp);
+            }
+
+            System.out.println("OTP for " + username + ": " + otp + " (expires at " + new Date(expiry) + ")");
+
+            return "redirect:/verify-otp";
+        }
+
+        model.addAttribute("error", "Invalid credentials");
+        return "redirect:/login";
+    }
 
     @GetMapping("/register")
     public String showRegisterPage(Model model) {
@@ -54,22 +103,46 @@ public String login(String username, String password, HttpSession session, Model
         return "register";
     }
 
-    
     @PostMapping("/register")
-public String registerUser(@ModelAttribute User user) {
+    public String registerUser(@ModelAttribute User user, Model model) {
+        // Validate at least one contact method
+        boolean hasEmail = user.getEmail() != null && !user.getEmail().isBlank();
+        boolean hasPhone = user.getPhone() != null && !user.getPhone().isBlank();
 
-    userService.save(user); // aici se face BCrypt
+        if (!hasEmail && !hasPhone) {
+            model.addAttribute("error", "You must provide at least an email or a phone number.");
+            model.addAttribute("user", user);
+            return "register";
+        }
 
-    return "redirect:/login";
-}
+        // Validate email format
+        if (hasEmail && !user.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            model.addAttribute("error", "Invalid email format.");
+            model.addAttribute("user", user);
+            return "register";
+        }
 
+        // Validate phone format (basic: digits, spaces, +, -, min 7 chars)
+        if (hasPhone && !user.getPhone().matches("^[+]?[0-9\\s-]{7,20}$")) {
+            model.addAttribute("error", "Invalid phone number format.");
+            model.addAttribute("user", user);
+            return "register";
+        }
 
+        // Check username uniqueness
+        if (userService.userExists(user.getUsername())) {
+            model.addAttribute("error", "Username already exists.");
+            model.addAttribute("user", user);
+            return "register";
+        }
 
+        userService.save(user);
+        return "redirect:/login";
+    }
 
     @GetMapping("/jucator")
     public String jucator(HttpSession session) {
         User user = (User) session.getAttribute("user");
-
         if (user == null) {
             return "redirect:/login";
         }
@@ -79,7 +152,6 @@ public String registerUser(@ModelAttribute User user) {
     @GetMapping("/antrenor")
     public String antrenor(HttpSession session) {
         User user = (User) session.getAttribute("user");
-
         if (user == null) {
             return "redirect:/login";
         }
@@ -87,54 +159,87 @@ public String registerUser(@ModelAttribute User user) {
     }
 
     @GetMapping("/logout")
-    public String logout() {
-        return "login";
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
     }
-    private Map<String, String> otpStorage = new HashMap<>();
+
+    private final Map<String, OtpData> otpStorage = new HashMap<>();
+
+    private static class OtpData {
+        String otp;
+        long expiryTime;
+        String email;
+        String phone;
+
+        OtpData(String otp, long expiryTime, String email, String phone) {
+            this.otp = otp;
+            this.expiryTime = expiryTime;
+            this.email = email;
+            this.phone = phone;
+        }
+
+        boolean isExpired() {
+            return System.currentTimeMillis() > expiryTime;
+        }
+    }
+
     @GetMapping("/verify-otp")
-public String showOtpPage() {
-    return "verify-otp";
-}
+    public String showOtpPage(HttpSession session, Model model) {
+        Long expiry = (Long) session.getAttribute("otpExpiry");
+        if (expiry == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("otpExpiry", expiry);
+        return "verify-otp";
+    }
 
     @PostMapping("/verify-otp")
-public String verifyOtp(@RequestParam String otp, HttpSession session, Model model) {
+    public String verifyOtp(@RequestParam String otp, HttpSession session, Model model) {
+        String username = (String) session.getAttribute("pendingUser");
 
-    String username = (String) session.getAttribute("pendingUser");
+        if (username == null) return "redirect:/login";
 
-    if (username == null) return "redirect:/login";
+        OtpData otpData = otpStorage.get(username);
 
-    String storedOtp = otpStorage.get(username);
+        // Check if OTP exists or expired
+        if (otpData == null || otpData.isExpired()) {
+            otpStorage.remove(username);
+            session.removeAttribute("pendingUser");
+            session.removeAttribute("otpExpiry");
+            model.addAttribute("error", "OTP expired. Please login again.");
+            return "redirect:/login";
+        }
 
-    if (storedOtp != null && storedOtp.equals(otp)) {
+        if (otpData.otp.equals(otp)) {
+            User user = userService.getUser(username);
+            if (user == null) {
+                model.addAttribute("error", "User not found");
+                return "redirect:/login";
+            }
 
-        User user = userService.getUser(username);
-        session.setAttribute("user", user);
+            session.setAttribute("user", user);
+            otpStorage.remove(username);
+            session.removeAttribute("pendingUser");
+            session.removeAttribute("otpExpiry");
 
-        otpStorage.remove(username);
+            String role = user.getRole() == null ? "" : user.getRole().toLowerCase();
 
-        String role = user.getRole().toLowerCase();
+            return switch (role) {
+                case "antrenor" -> "redirect:/antrenor";
+                case "jucator" -> "redirect:/jucator";
+                default -> "redirect:/login";
+            };
+        }
 
-        return switch (role) {
-            case "antrenor" -> "redirect:/antrenor";
-            case "jucator" -> "redirect:/jucator";
-            default -> "redirect:/login";
-        };
+        model.addAttribute("otpExpiry", otpData.expiryTime);
+        model.addAttribute("error", "Cod OTP invalid");
+        return "redirect:/verify-otp";
     }
-
-    model.addAttribute("error", "Cod OTP invalid");
-    return "verify-otp";
-}
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PlayerService playerService;
 
     @GetMapping("/add-player")
     public String showAddPlayerForm(HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");
-
         if (user == null) {
             return "redirect:/login";
         }
@@ -144,28 +249,20 @@ public String verifyOtp(@RequestParam String otp, HttpSession session, Model mod
 
     @PostMapping("/add-player")
     public String addPlayer(@ModelAttribute("player") Player player, Model model) {
-
         Player existingPlayer = playerRepository.findByFirstName(player.getFirstName());
-        User user = userRepository.findByUsername(player.getFirstName());
+        User user = userRepository.findFirstByUsername(player.getFirstName());
         if (existingPlayer != null) {
-
             existingPlayer.setShirtNumber(player.getShirtNumber());
             existingPlayer.setPosition(player.getPosition());
             existingPlayer.setStartingTeam(player.getStartingTeam());
             existingPlayer.setUserId(user != null ? user.getId() : null);
-
-
             playerService.savePlayer(existingPlayer);
         } else {
-
-
             player.setUserId(user != null ? user.getId() : null);
             playerService.savePlayer(player);
         }
-
         return "redirect:/antrenor";
     }
-
 
     @GetMapping("/make-suggestion")
     public String showSuggestionForm(HttpSession session, Model model) {
@@ -192,10 +289,11 @@ public String verifyOtp(@RequestParam String otp, HttpSession session, Model mod
         Player player = playerRepository.findByUserId(user.getId());
         if (player == null) {
             model.addAttribute("errorMessage", "Antrenorul nu te-a înregistrat încă.");
+            model.addAttribute("player", formPlayer);
             return "make-suggestion";
         }
 
-        User coach = userRepository.findByUsername(coachUsername);
+        User coach = userRepository.findFirstByUsername(coachUsername);
         if (coach == null) {
             model.addAttribute("errorMessage", "Antrenorul cu acest username nu există.");
             model.addAttribute("player", formPlayer);
@@ -204,21 +302,14 @@ public String verifyOtp(@RequestParam String otp, HttpSession session, Model mod
 
         player.setSuggestion(formPlayer.getSuggestion());
         player.setCoachUserId(coach.getId());
-
         playerRepository.save(player);
 
         return "redirect:/jucator";
     }
 
-
-
-    @Autowired
-    private FormationService formationService;
-
     @GetMapping("/formation")
     public String showFormationForm(HttpSession session) {
         User user = (User) session.getAttribute("user");
-
         if (user == null) {
             return "redirect:/login";
         }
@@ -228,7 +319,6 @@ public String verifyOtp(@RequestParam String otp, HttpSession session, Model mod
     @PostMapping("/formation")
     public String saveFormation(@RequestParam("formation") String formationName, @RequestParam String description, HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");
-
         if (user == null) {
             return "redirect:/login";
         }
@@ -239,15 +329,13 @@ public String verifyOtp(@RequestParam String otp, HttpSession session, Model mod
         formation.setUserId(user.getId());
 
         formationService.saveOrUpdateFormation(formation);
-
         return "redirect:/antrenor";
     }
 
     @GetMapping("/remove-player")
     public String showRemovePlayerForm(HttpSession session) {
         User user = (User) session.getAttribute("user");
-
-        if (user == null) {
+        if(user == null) {
             return "redirect:/login";
         }
         return "remove-player";
@@ -276,16 +364,9 @@ public String verifyOtp(@RequestParam String otp, HttpSession session, Model mod
         return "redirect:/antrenor";
     }
 
-    @Autowired
-    private PlayerRepository playerRepository;
-
-    @Autowired
-    private PlayerStatService playerStatService;
-
     @GetMapping("/statistics")
     public String showPlayerStatForm(HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");
-
         if (user == null) {
             return "redirect:/login";
         }
@@ -304,7 +385,7 @@ public String verifyOtp(@RequestParam String otp, HttpSession session, Model mod
                                  @RequestParam int shotsOnTarget,
                                  Model model) {
 
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findFirstByUsername(username);
         if (user == null) {
             model.addAttribute("errorMessage", "Jucătorul nu există.");
             model.addAttribute("playerStat", new PlayerStat());
@@ -329,7 +410,7 @@ public String verifyOtp(@RequestParam String otp, HttpSession session, Model mod
         playerStat.setUserId(user.getId());
         playerStat.setPlayerId(player.getId());
 
-        playerStatService .saveOrUpdateStat(playerStat);
+        playerStatService.saveOrUpdateStat(playerStat);
 
         model.addAttribute("successMessage", "Statistici salvate cu succes!");
         model.addAttribute("playerStat", new PlayerStat());
@@ -337,12 +418,6 @@ public String verifyOtp(@RequestParam String otp, HttpSession session, Model mod
         return "antrenor";
     }
 
-
-    @Autowired
-    private PlayerStatRepository playerStatRepository;
-
-
-    
     @GetMapping("/see-statistics")
     public String seeStatistics(HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");
@@ -369,9 +444,8 @@ public String verifyOtp(@RequestParam String otp, HttpSession session, Model mod
     }
 
     @GetMapping("/update-starting-team")
-    public String showStartingTeamSelection(HttpSession session,Model model) {
+    public String showStartingTeamSelection(HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");
-
         if (user == null) {
             return "redirect:/login";
         }
@@ -380,10 +454,8 @@ public String verifyOtp(@RequestParam String otp, HttpSession session, Model mod
         return "update-starting-team";
     }
 
-
     @PostMapping("/update-starting-team")
     public String selectStartingTeam(@RequestParam(required = false, name = "startingTeamIds") List<Integer> startingTeamIds) {
-
         if (startingTeamIds == null) {
             startingTeamIds = Collections.emptyList();
         }
@@ -395,78 +467,63 @@ public String verifyOtp(@RequestParam String otp, HttpSession session, Model mod
         }
         playerRepository.saveAll(allPlayers);
 
-        return "redirect:/antrenor"; // sau alt view după salvare
+        return "redirect:/antrenor";
     }
 
     @GetMapping("/change-shirt-number")
-public String showShirtNumberForm(HttpSession session, Model model) {
-    User user = (User) session.getAttribute("user");
+    public String showShirtNumberForm(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
 
-    if (user == null) {
-        return "redirect:/login";
-    }
+        Player player = playerRepository.findByUserId(user.getId());
+        if (player == null) {
+            model.addAttribute("errorMessage", "Antrenorul nu v-a înregistrat încă.");
+            return "change-shirt-number";
+        }
 
-    Player player = playerRepository.findByUserId(user.getId());
-
-    if (player == null) {
-        model.addAttribute("errorMessage", "Antrenorul nu v-a înregistrat încă.");
-        return "change-shirt-number";
-    }
-
-    // Trimite numărul curent în model pentru preview
-    model.addAttribute("shirtNumber", player.getShirtNumber());
-
-    return "change-shirt-number";
-}
-
-
-  
-
-  @PostMapping("/change-shirt-number")
-public String changeShirtNumber(@RequestParam int shirtNumber, HttpSession session, Model model) {
-
-    User user = (User) session.getAttribute("user");
-
-    if (user == null) {
-        return "redirect:/login";
-    }
-
-    Player player = playerRepository.findByUserId(user.getId());
-
-    if (player == null) {
-        model.addAttribute("errorMessage", "Antrenorul nu v-a înregistrat încă.");
-        return "change-shirt-number";
-    }
-
-    Player existingPlayer = playerRepository.findByShirtNumber(shirtNumber);
-
-    if (existingPlayer != null && !existingPlayer.getId().equals(player.getId())) {
-        model.addAttribute("errorMessage", "Numărul de tricou este deja folosit de un alt jucător.");
         model.addAttribute("shirtNumber", player.getShirtNumber());
         return "change-shirt-number";
     }
 
-    player.setShirtNumber(shirtNumber);
-    playerRepository.save(player);
+    @PostMapping("/change-shirt-number")
+    public String changeShirtNumber(@RequestParam int shirtNumber, HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
 
-    model.addAttribute("successMessage", "Numărul de tricou a fost schimbat cu succes.");
-    model.addAttribute("shirtNumber", shirtNumber);
+        Player player = playerRepository.findByUserId(user.getId());
+        if (player == null) {
+            model.addAttribute("errorMessage", "Antrenorul nu v-a înregistrat încă.");
+            return "change-shirt-number";
+        }
 
-    return "change-shirt-number";
-}
+        Player existingPlayer = playerRepository.findByShirtNumber(shirtNumber);
 
-    @Autowired
-    private FormationRepository formationRepository;
+        if (existingPlayer != null && !existingPlayer.getId().equals(player.getId())) {
+            model.addAttribute("errorMessage", "Numărul de tricou este deja folosit de un alt jucător.");
+            model.addAttribute("shirtNumber", player.getShirtNumber());
+            return "change-shirt-number";
+        }
+
+        player.setShirtNumber(shirtNumber);
+        playerRepository.save(player);
+
+        model.addAttribute("successMessage", "Numărul de tricou a fost schimbat cu succes.");
+        model.addAttribute("shirtNumber", shirtNumber);
+
+        return "change-shirt-number";
+    }
 
     @GetMapping("/view-formations")
     public String viewFormations(Model model) {
         List<Formation> formations = formationRepository.findAll();
-
         List<Map<String, String>> formationDetails = new ArrayList<>();
 
         for (Formation formation : formations) {
             User user = userRepository.findByIdNoOptional(formation.getUserId());
-
             String coachName = "Necunoscut";
             if (user != null) {
                 coachName = user.getUsername();
@@ -476,7 +533,6 @@ public String changeShirtNumber(@RequestParam int shirtNumber, HttpSession sessi
             details.put("name", formation.getName());
             details.put("description", formation.getDescription());
             details.put("coach", coachName);
-
             formationDetails.add(details);
         }
 
@@ -486,66 +542,59 @@ public String changeShirtNumber(@RequestParam int shirtNumber, HttpSession sessi
 
     @GetMapping("/choose-action")
     public String chooseActionPage() {
-        return "choose-action"; // numele fișierului HTML fără .html
+        return "choose-action";
     }
 
-   @GetMapping("/view-formations-coach")
-public String viewFormationsCoach(Model model) {
-    List<Formation> formations = formationRepository.findAll();
-    List<Map<String, String>> formationDetails = new ArrayList<>();
+    @GetMapping("/view-formations-coach")
+    public String viewFormationsCoach(Model model) {
+        List<Formation> formations = formationRepository.findAll();
+        List<Map<String, String>> formationDetails = new ArrayList<>();
 
-    for (Formation formation : formations) {
-        User user = userRepository.findByIdNoOptional(formation.getUserId());
+        for (Formation formation : formations) {
+            User user = userRepository.findByIdNoOptional(formation.getUserId());
+            String coachName = "Necunoscut";
+            if (user != null) {
+                coachName = user.getUsername();
+            }
 
-        String coachName = "Necunoscut";
-        if (user != null) {
-            coachName = user.getUsername();
+            Map<String, String> details = new HashMap<>();
+            details.put("id", String.valueOf(formation.getId())); 
+            details.put("name", formation.getName());
+            details.put("description", formation.getDescription());
+            details.put("coach", coachName);
+            formationDetails.add(details);
         }
 
-        Map<String, String> details = new HashMap<>();
-        // ADAUGĂ ACEASTĂ LINIE:
-        details.put("id", String.valueOf(formation.getId())); 
-        
-        details.put("name", formation.getName());
-        details.put("description", formation.getDescription());
-        details.put("coach", coachName);
-
-        formationDetails.add(details);
+        model.addAttribute("formationDetails", formationDetails);
+        return "view-formations-coach";
     }
-
-    model.addAttribute("formationDetails", formationDetails);
-    return "view-formations-coach";
-}
 
     @PostMapping("/formation/delete")
-public String deleteFormation(@RequestParam(value = "id", required = false) String idRaw) {
-    System.out.println("ID primit brut: '" + idRaw + "'"); // Vezi ce scrie între ghilimele în consolă
-    
-    if (idRaw == null || idRaw.trim().isEmpty() || idRaw.equals("null")) {
-        System.err.println("Eroare: ID-ul este gol sau nevalid!");
+    public String deleteFormation(@RequestParam(value = "id", required = false) String idRaw) {
+        System.out.println("ID primit brut: '" + idRaw + "'");
+
+        if (idRaw == null || idRaw.trim().isEmpty() || idRaw.equals("null")) {
+            System.err.println("Eroare: ID-ul este gol sau nevalid!");
+            return "redirect:/view-formations-coach";
+        }
+
+        try {
+            Long id = Long.parseLong(idRaw);
+            formationRepository.deleteById(id);
+            System.out.println("Ștergere reușită pentru ID: " + id);
+        } catch (NumberFormatException e) {
+            System.err.println("Nu s-a putut converti ID-ul: " + idRaw);
+        }
+
         return "redirect:/view-formations-coach";
     }
-
-    try {
-        Long id = Long.parseLong(idRaw);
-        formationRepository.deleteById(id);
-        System.out.println("Ștergere reușită pentru ID: " + id);
-    } catch (NumberFormatException e) {
-        System.err.println("Nu s-a putut converti ID-ul: " + idRaw);
-    }
-
-    return "redirect:/view-formations-coach";
-}
 
     @GetMapping("/see-suggestions")
     public String seeSuggestions(HttpSession session, Model model) {
         User coach = (User) session.getAttribute("user");
         if (coach == null) return "redirect:/login";
 
-
         List<Player> players = playerRepository.findAllByCoachUserId(coach.getId());
-
-
         List<Map<String, Object>> suggestions = new ArrayList<>();
 
         for (Player p : players) {
@@ -555,12 +604,10 @@ public String deleteFormation(@RequestParam(value = "id", required = false) Stri
             map.put("playerId", p.getId());
             map.put("playerName", playerUser != null ? playerUser.getUsername() : "Necunoscut");
             map.put("suggestion", p.getSuggestion());
-
             suggestions.add(map);
         }
 
         model.addAttribute("suggestions", suggestions);
-
         return "see-suggestions";
     }
 
@@ -586,7 +633,4 @@ public String deleteFormation(@RequestParam(value = "id", required = false) Stri
 
         return "redirect:/see-suggestions";
     }
-
-
-
 }

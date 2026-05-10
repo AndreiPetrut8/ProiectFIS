@@ -6,12 +6,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" crossorigin="" />
     <link th:href="@{/style.css}" rel="stylesheet" />
     <title>Register</title>
+    <style>
+        .login__error {
+            color: #ff4444;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .login__hint {
+            color: #cccccc;
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 0.3rem;
+        }
+    </style>
+<base target="_blank">
 </head>
 <body style="background-color: #01522f;">
 <div class="login">
 
-    <form th:action="@{/register}" method="post" th:object="${user}" class="login__form">
+    <form th:action="@{/register}" method="post" th:object="${user}" class="login__form" id="registerForm">
         <h1 class="login__title">Register</h1>
+
+        <div th:if="${error}" class="login__error" th:text="${error}"></div>
 
         <div class="login__inputs">
             <div class="login__box">
@@ -24,12 +41,28 @@
                 <i class="ri-lock-2-fill"></i>
             </div>
 
+            <div class="login__box">
+                <input type="email" th:field="*{email}" id="email" placeholder="Email" class="login__input" />
+                <i class="ri-mail-line"></i>
+            </div>
+
+            <div class="login__box">
+                <input type="tel" th:field="*{phone}" id="phone" placeholder="Phone number" class="login__input" />
+                <i class="ri-phone-line"></i>
+            </div>
+
+            <div class="login__hint">You must provide at least an email or a phone number.</div>
+
             <div>
                 <select th:field="*{role}" required>
                     <option value="" disabled selected>Select role</option>
                     <option value="JUCATOR">Jucator</option>
                     <option value="ANTRENOR">Antrenor</option>
                 </select>
+            </div>
+
+            <div id="contact-error" class="login__error" style="display: none;">
+                Please provide at least an email or phone number.
             </div>
         </div>
 
@@ -41,5 +74,21 @@
     </form>
 
 </div>
+
+<script>
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const errorDiv = document.getElementById('contact-error');
+
+        if (!email && !phone) {
+            e.preventDefault();
+            errorDiv.style.display = 'block';
+        } else {
+            errorDiv.style.display = 'none';
+        }
+    });
+</script>
+
 </body>
 </html>

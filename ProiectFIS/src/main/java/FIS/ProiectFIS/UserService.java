@@ -14,14 +14,30 @@ public class UserService {
 private PasswordEncoder passwordEncoder;
 
     public boolean authenticate(String username, String password) {
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findFirstByUsername(username);
 
-        return user != null &&
-               passwordEncoder.matches(password, user.getPassword());
+        if (user == null) return false;
+
+        String stored = user.getPassword();
+
+        // Normal case: stored is a bcrypt hash
+        if (passwordEncoder.matches(password, stored)) {
+            return true;
+        }
+
+        // Migration case: stored password is still plain text
+        if (stored != null && stored.equals(password)) {
+            String encoded = passwordEncoder.encode(password);
+            user.setPassword(encoded);
+            userRepository.save(user);
+            return true;
+        }
+
+        return false;
     }
 
     public User getUser(String username) {
-        return userRepository.findByUsername(username);
+        return userRepository.findFirstByUsername(username);
     }
 
   public void save(User user) {

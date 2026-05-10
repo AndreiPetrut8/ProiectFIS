@@ -13,6 +13,9 @@ public class User {
     private String password;
     private String role;
 
+    private String email;
+    private String phone;
+
     public User() {}
 
     public User(String username, String password, String role) {
@@ -21,7 +24,6 @@ public class User {
         this.role = role;
     }
 
-    // Getteri și setteri
     public Integer getId() {
         return id;
     }
@@ -38,7 +40,6 @@ public class User {
         this.username = username;
     }
 
-    // AICI ADAUGI getterul lipsă
     public String getPassword() {
         return password;
     }
@@ -54,5 +55,20 @@ public class User {
     public void setRole(String role) {
         this.role = role;
     }
-}
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+}

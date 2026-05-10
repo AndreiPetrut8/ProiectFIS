@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" crossorigin="">
+	<link th:href="@{/style.css}" rel="stylesheet" />
+
+	<title>Verify OTP</title>
+	<style>
+		.otp-timer {
+			text-align: center;
+			color: #ffcc00;
+			font-size: 1.2rem;
+			font-weight: bold;
+			margin-bottom: 1rem;
+		}
+		.otp-expired {
+			color: #ff4444;
+		}
+	</style>
+<base target="_blank">
+</head>
+<body>
+<video autoplay muted loop id="background-video">
+	<source src="/videos/background.mp4" type="video/mp4">
+	Your browser does not support the video tag.
+</video>
+
+<div class="login">
+
+	<form th:action="@{/verify-otp}" method="post" class="login__form">
+		<h1 class="login__title">Verify OTP</h1>
+
+		<div class="otp-timer" id="timer">5:00</div>
+
+		<div class="login__inputs">
+			<div class="login__box">
+				<input id="otp" name="otp" type="text" placeholder="Enter OTP" required class="login__input">
+			</div>
+		</div>
+
+		<div th:if="${error}" class="login__error" th:text="${error}"></div>
+
+		<button type="submit" class="login__button" id="verifyBtn">Verify</button>
+
+		<div class="login__register">
+			<a th:href="@{/login}">Back to Login</a>
+		</div>
+	</form>
+
+</div>
+
+<script th:inline="javascript">
+    const expiryTime = /*[[${otpExpiry}]]*/ 0;
+    const timerEl = document.getElementById('timer');
+    const verifyBtn = document.getElementById('verifyBtn');
+
+    function updateTimer() {
+        const remaining = Math.max(0, Math.floor((expiryTime - Date.now()) / 1000));
+        const minutes = Math.floor(remaining / 60);
+        const seconds = remaining % 60;
+        timerEl.textContent = minutes + ':' + seconds.toString().padStart(2, '0');
+
+        if (remaining <= 0) {
+            clearInterval(interval);
+            timerEl.textContent = 'EXPIRED';
+            timerEl.classList.add('otp-expired');
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'Expired';
+            // Redirect to login after 3 seconds
+            setTimeout(function() {
+                window.location.href = '/login';
+            }, 3000);
+        }
+    }
+
+    const interval = setInterval(updateTimer, 1000);
+    updateTimer();
+</script>
+
+</body>
+</html>
